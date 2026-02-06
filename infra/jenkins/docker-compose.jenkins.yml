@@ -1,0 +1,23 @@
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: unless-stopped
+    user: root
+    ports:
+      - "8090:8080"   # afuera 8090 (porque 8080 está ocupado)
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    depends_on:
+      - jenkins
+    command: tunnel --no-autoupdate --protocol http2 run --token ${CF_TUNNEL_TOKEN}
+
+
+volumes:
+  jenkins_home:

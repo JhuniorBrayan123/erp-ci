@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ERP Starter (Facturación + POS)</title>
+    <script src="/env.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial; margin: 24px; }
+      code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; }
+      .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin: 12px 0; }
+      .muted { color: #666; }
+      button { padding: 8px 12px; cursor: pointer; }
+      pre { background: #111; color: #eee; padding: 12px; border-radius: 10px; overflow: auto; }
+    </style>
+  </head>
+  <body>
+    <h1>ERP Starter</h1>
+    <p class="muted">Este es un placeholder para validar que tu infraestructura (PostgreSQL + Redis + múltiples entornos) está ok.</p>
+
+    <div class="card">
+      <div><strong>APP_ENV</strong>: <code id="env"></code></div>
+      <div><strong>APP_VERSION</strong>: <code id="ver"></code></div>
+      <div><strong>Ruta actual</strong>: <code id="path"></code></div>
+      <div class="muted">Prueba también: <code>/auth/login</code> (SPA fallback).</div>
+    </div>
+
+    <div class="card">
+      <h3>Checks</h3>
+      <button onclick="run()">Probar /api/health, /api/db-check, /api/redis-check</button>
+      <pre id="out">(sin ejecutar)</pre>
+    </div>
+
+    <script>
+      const env = (window.__ENV__ && window.__ENV__.APP_ENV) || "unknown";
+      const ver = (window.__ENV__ && window.__ENV__.APP_VERSION) || "unknown";
+      document.getElementById("env").textContent = env;
+      document.getElementById("ver").textContent = ver;
+      document.getElementById("path").textContent = location.pathname;
+
+      async function fetchJson(url) {
+        const r = await fetch(url);
+        const txt = await r.text();
+        try { return JSON.parse(txt); } catch { return { raw: txt }; }
+      }
+
+      async function run() {
+        const out = document.getElementById("out");
+        out.textContent = "Ejecutando...";
+        const results = {
+          health: await fetchJson("/api/health"),
+          db: await fetchJson("/api/db-check"),
+          redis: await fetchJson("/api/redis-check"),
+        };
+        out.textContent = JSON.stringify(results, null, 2);
+      }
+      window.run = run;
+    </script>
+  </body>
+</html>
