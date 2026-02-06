@@ -29,17 +29,24 @@ pipeline {
     }
 
     stage('Deploy') {
-      steps {
-        sh '''
-          set -eux
-          ENV_FILE="infra/env/.env.${TARGET_ENV}"
-          PROJECT="erpperu2-${TARGET_ENV}"
+  steps {
+    sh '''
+      set -eux
+      ENV_FILE="infra/env/.env.${TARGET_ENV}"
+      PROJECT="erpperu2-${TARGET_ENV}"
 
-          docker compose --env-file "$ENV_FILE" -p "$PROJECT" -f ${COMPOSE_FILE} up -d --remove-orphans
-          docker compose --env-file "$ENV_FILE" -p "$PROJECT" -f ${COMPOSE_FILE} ps
-        '''
-      }
-    }
+      # Limpia el stack anterior (si existe)
+      docker compose -p "$PROJECT" -f ${COMPOSE_FILE} down --remove-orphans || true
+
+      # Levanta recreando y build forzado
+      docker compose --env-file "$ENV_FILE" -p "$PROJECT" -f ${COMPOSE_FILE} up -d --build --force-recreate --remove-orphans
+
+      # Ver estado
+      docker compose --env-file "$ENV_FILE" -p "$PROJECT" -f ${COMPOSE_FILE} ps
+    '''
+  }
+}
+
   }
 
   post {
