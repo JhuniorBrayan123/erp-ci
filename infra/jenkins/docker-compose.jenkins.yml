@@ -1,11 +1,13 @@
 services:
   jenkins:
-    image: jenkins/jenkins:lts
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: jenkins
     restart: unless-stopped
     user: root
     ports:
-      - "8090:8080"   # afuera 8090 (porque 8080 está ocupado)
+      - "8090:8080"
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
@@ -17,7 +19,6 @@ services:
     depends_on:
       - jenkins
     command: tunnel --no-autoupdate --protocol http2 run --token ${CF_TUNNEL_TOKEN}
-
 
 volumes:
   jenkins_home:
